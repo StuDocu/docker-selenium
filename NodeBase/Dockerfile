@@ -2,8 +2,8 @@
 # NOTE: DO *NOT* EDIT THIS FILE.  IT IS GENERATED.
 # PLEASE UPDATE Dockerfile.txt INSTEAD OF THIS FILE
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FROM local-seleniarm/base:4.0.0-20211018
-LABEL authors=SeleniumHQ,sj26,jamesmortensen
+FROM 388073764231.dkr.ecr.eu-west-1.amazonaws.com/selenium-base:10
+LABEL authors=studocu
 
 USER root
 
@@ -37,13 +37,6 @@ RUN apt-get -qqy update \
   && rm -rf /var/lib/apt/lists/* \
   && apt-get -qyy clean
 
-#=====
-# VNC
-#=====
-RUN apt-get update -qqy \
-  && apt-get -qqy install \
-  x11vnc \
-  && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 #=========
 # fluxbox
@@ -88,25 +81,6 @@ RUN apt-get -qqy update \
   && rm -rf /var/lib/apt/lists/* \
   && apt-get -qyy clean
 
-########################################
-# noVNC exposes VNC through a web page #
-########################################
-# Download https://github.com/novnc/noVNC dated 2021-03-30 commit 84f102d6a9ffaf3972693d59bad5c6fddb6d7fb0
-# Download https://github.com/novnc/websockify dated 2021-03-22 commit c5d365dd1dbfee89881f1c1c02a2ac64838d645f
-ENV NOVNC_SHA="84f102d6a9ffaf3972693d59bad5c6fddb6d7fb0" \
-    WEBSOCKIFY_SHA="c5d365dd1dbfee89881f1c1c02a2ac64838d645f"
-RUN  wget -nv -O noVNC.zip \
-       "https://github.com/novnc/noVNC/archive/${NOVNC_SHA}.zip" \
-  && unzip -x noVNC.zip \
-  && mv noVNC-${NOVNC_SHA} /opt/bin/noVNC \
-  && cp /opt/bin/noVNC/vnc.html /opt/bin/noVNC/index.html \
-  && rm noVNC.zip \
-  && wget -nv -O websockify.zip \
-      "https://github.com/novnc/websockify/archive/${WEBSOCKIFY_SHA}.zip" \
-  && unzip -x websockify.zip \
-  && rm websockify.zip \
-  && mv websockify-${WEBSOCKIFY_SHA} /opt/bin/noVNC/utils/websockify
-
 #=========================================================================================================================================
 # Run this command for executable file permissions for /dev/shm when this is a "child" container running in Docker Desktop and WSL2 distro
 #=========================================================================================================================================
@@ -130,27 +104,12 @@ COPY start-selenium-node.sh \
 #==============================
 COPY selenium.conf /etc/supervisor/conf.d/
 
-#==============================
-# Generating the VNC password as seluser
-# So the service can be started with seluser
-#==============================
-
-RUN mkdir -p ${HOME}/.vnc \
-  && x11vnc -storepasswd secret ${HOME}/.vnc/passwd
-
 #==========
 # Relaxing permissions for OpenShift and other non-sudo environments
 #==========
 RUN sudo chmod -R 777 ${HOME} \
   && sudo chgrp -R 0 ${HOME} \
   && sudo chmod -R g=u ${HOME}
-
-#==============================
-# Scripts to run fluxbox, x11vnc and noVNC
-#==============================
-COPY start-vnc.sh \
-      start-novnc.sh \
-      /opt/bin/
 
 #==============================
 # Selenium Grid logo as wallpaper for Fluxbox
@@ -167,7 +126,6 @@ ENV SCREEN_DPI 96
 ENV DISPLAY :99.0
 ENV DISPLAY_NUM 99
 ENV START_XVFB true
-ENV START_NO_VNC true
 
 #========================
 # Selenium Configuration
