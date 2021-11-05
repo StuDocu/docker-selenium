@@ -12,8 +12,8 @@ LABEL authors="Selenium <selenium-developers@googlegroups.com>"
 
 # No interactive frontend during docker build
 ENV DEBIAN_FRONTEND=noninteractive \
-    DEBCONF_NONINTERACTIVE_SEEN=true \
-    ARCH=arm64
+    DEBCONF_NONINTERACTIVE_SEEN=true
+ARG TARGETARCH
 
 #========================
 # Miscellaneous packages
@@ -33,7 +33,7 @@ RUN apt-get -qqy update \
     supervisor \
     gnupg2 \
   && rm -rf /var/lib/apt/lists/* /var/cache/apt/* \
-  && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' ./usr/lib/jvm/java-11-openjdk-$ARCH/conf/security/java.security
+  && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' ./usr/lib/jvm/java-11-openjdk-$TARGETARCH/conf/security/java.security
 
 #===================
 # Timezone settings
